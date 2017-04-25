@@ -10,6 +10,6 @@ from sklearn.decomposition import IncrementalPCA as IPCA
 
 # dimensionally reduce the given matrix
 def dimensional_reduction(matrix):
-  ipca = IPCA()
+  ipca = IPCA(n_components=200, batch_size = 5000)
   ipca.fit(matrix)
   return ipca.transform(matrix);
