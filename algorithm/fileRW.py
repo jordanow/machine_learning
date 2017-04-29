@@ -9,7 +9,7 @@ csv_delimiter = ','
 # csv reader fn
 def csv_reader(file_path):
     return pd.read_csv(
-        file_path, delimiter=csv_delimiter).values
+        file_path, delimiter=csv_delimiter, header=None).values
 
 
 # write csv to disk
