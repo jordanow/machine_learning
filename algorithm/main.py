@@ -66,8 +66,18 @@ def remove_appid_colums(arr):
 # data to classifier
 dr_training_data_arr = get_array(
     output_dimensional_reduction_training_data)
-logger.method_timer('Getting array from DR_test_data.csv')
+logger.method_timer('Getting array from DR_training_data.csv')
 training_labels_arr = get_array(input_training_labels)
 logger.method_timer('Getting array from training_labels.csv')
-classifier.createMap(dr_training_data_arr, training_labels_arr)
+classifier_dict = classifier.create_classifier(
+    dr_training_data_arr, training_labels_arr)
+
+
+# Step 3.1 Use the classifier result and pass the DR_test_data.csv
+# and match the data to get the app ids for the data in DR_test_data.csv
+dr_test_data_arr = get_array(output_dimensional_reduction_test_data)
+logger.method_timer('Getting array from DR_test_data.csv')
+classifier_final_result = classifier.classify(
+    classifier_dict, dr_test_data_arr)
+# print(classifier_final_result['Social'])
 logger.total_runtime()
