@@ -18,7 +18,7 @@ output_dimensional_reduction_training_data = '../output/DR_training_data.csv'
 output_final_result = '../output/predicted_labels.csv'
 
 # global variables
-training_set_size = 90
+training_set_size = 0.90
 
 
 # Returns file contents as array
@@ -45,13 +45,14 @@ def merge_arrs(arr1, arr2, axis=1):
 """
 Randomise the array
 Then split it into 2 parts
+based on the training set size
 """
 
 
-def get_cross_validation_input_output_pairs(arr, percent_range):
+def get_cross_validation_input_output_pairs(arr, train_size):
     np.random.shuffle(arr)
     length_of_arr = len(arr)
-    length_of_arr1 = int((percent_range * length_of_arr) / 100)
+    length_of_arr1 = int(train_size * length_of_arr)
 
     arr1 = []
     arr2 = []
@@ -77,7 +78,7 @@ Perform dimensional reduction
 Save the reduced training_data.csv
 """
 # prepare the dimensionally reduced training_data.csv
-# print("Reading training_data.csv")
+print("Reading training_data.csv")
 # training_data_arr = get_array(input_training_data)
 # logger.method_timer('Getting array from training_data.csv')
 
@@ -140,32 +141,42 @@ Read DR_training_data.csv
 Split the training data into training set and test set in a ratio
 of 90:10, where 90% belongs to training set
 """
-print('Starting cross validation')
-dr_training_data_arr = get_array(
-    output_dimensional_reduction_training_data)
-logger.method_timer('Getting array from DR_training_data.csv')
 
-dr_training_data_arr_no_app_id = remove_first_column(dr_training_data_arr)
-logger.method_timer('Getting the tf-idf values for training')
 
-training_labels_arr = get_array(input_training_labels)
-training_labels_arr_no_app_id = remove_first_column(training_labels_arr)
+def cross_validation():
+    print('Starting cross validation')
+    dr_training_data_arr = get_array(
+        output_dimensional_reduction_training_data)
+    logger.method_timer('Getting array from DR_training_data.csv')
 
-merged_dr_training_data_labels = merge_arrs(
-    training_labels_arr_no_app_id, dr_training_data_arr_no_app_id)
-logger.method_timer('Merging the input and output arrays')
+    dr_training_data_arr_no_app_id = remove_first_column(dr_training_data_arr)
+    logger.method_timer('Getting the tf-idf values for training')
 
-Train_IO_Pair, Test_IO_Pair = get_cross_validation_input_output_pairs(
-    merged_dr_training_data_labels, training_set_size)
-logger.method_timer(
-    'Splitting training data into test and training set')
+    training_labels_arr = get_array(input_training_labels)
+    training_labels_arr_no_app_id = remove_first_column(training_labels_arr)
 
-X_Train = remove_first_column(Train_IO_Pair)
-X_Test = remove_first_column(Test_IO_Pair)
+    merged_dr_training_data_labels = merge_arrs(
+        training_labels_arr_no_app_id, dr_training_data_arr_no_app_id)
+    logger.method_timer('Merging the input and output arrays')
 
-Y_Train = get_arr_column(Train_IO_Pair, 0)
-Y_Test = get_arr_column(Test_IO_Pair, 0)
+    Train_IO_Pair, Test_IO_Pair = get_cross_validation_input_output_pairs(
+        merged_dr_training_data_labels, training_set_size)
+    logger.method_timer(
+        'Splitting training data into test and training set')
 
+    X_Train = remove_first_column(Train_IO_Pair)
+    X_Test = remove_first_column(Test_IO_Pair)
+
+    Y_Train = get_arr_column(Train_IO_Pair, 0)
+    Y_Test = get_arr_column(Test_IO_Pair, 0)
+
+    # .ravel() because Y_Train is expected to be a 1D array
+    # classifier.scikit_classify(X_Train, Y_Train.ravel(), X_Test, Y_Test)
+    classifier.classify(X_Train, Y_Train.ravel(), X_Test, Y_Test)
+
+
+# Begin cross validation
+cross_validation()
 
 # Step 3 :  Run classifier to get a function from DR'd training_data.csv and training_labels.csv
 # Step 3.1 : Run the classifier on DR'd test_data.csv to get
