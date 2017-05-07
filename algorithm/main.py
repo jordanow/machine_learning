@@ -45,34 +45,27 @@ def merge_arrs(arr1, arr2, axis=1):
 """
 Randomise the array
 Then split it into 2 parts
-
-arrX and arrY represent input and output array respectively
 """
 
 
-def get_cross_validation_input_output_pairs(arrX, arrY, percent_range):
-    np.random.shuffle(arrX)
-    length_of_arrX = len(arrX)
-    length_of_arr_train = int((percent_range * length_of_arrX) / 100)
+def get_cross_validation_input_output_pairs(arr, percent_range):
+    np.random.shuffle(arr)
+    length_of_arr = len(arr)
+    length_of_arr1 = int((percent_range * length_of_arr) / 100)
 
-    arrX1 = []
-    arrX2 = []
-    arrY1 = []
-    arrY2 = []
-
+    arr1 = []
+    arr2 = []
     i = 0
-    while i < length_of_arr_train:
-        arrX1.append(arrX[i])
-        arrY1.append(arrY[i])
+    while i < length_of_arr1:
+        arr1.append(arr[i])
         i = i + 1
 
-    i = length_of_arr_train
-    while i < length_of_arrX:
-        arrX2.append(arrX[i])
-        arrY2.append(arrY[i])
+    i = length_of_arr1
+    while i < length_of_arr:
+        arr2.append(arr[i])
         i = i + 1
 
-    return np.array(arrX1), np.array(arrX2), np.array(arrY1), np.array(arrY2)
+    return np.array(arr1), np.array(arr2)
 
 
 print('Starting classification task for Assignment 1')
@@ -158,13 +151,21 @@ logger.method_timer('Getting the tf-idf values for training')
 training_labels_arr = get_array(input_training_labels)
 training_labels_arr_no_app_id = remove_first_column(training_labels_arr)
 
-X_Train, X_Test, Y_Train, Y_Test = get_cross_validation_input_output_pairs(
-    dr_training_data_arr_no_app_id, training_labels_arr_no_app_id, training_set_size)
+merged_dr_training_data_labels = merge_arrs(
+    training_labels_arr_no_app_id, dr_training_data_arr_no_app_id)
+logger.method_timer('Merging the input and output arrays')
+
+Train_IO_Pair, Test_IO_Pair = get_cross_validation_input_output_pairs(
+    merged_dr_training_data_labels, training_set_size)
 logger.method_timer(
     'Splitting training data into test and training set')
 
-# print(X_Test.shape, X_Train.shape);
-# print(Y_Test.shape, Y_Train.shape);
+X_Train = remove_first_column(Train_IO_Pair)
+X_Test = remove_first_column(Test_IO_Pair)
+
+Y_Train = get_arr_column(Train_IO_Pair, 0)
+Y_Test = get_arr_column(Test_IO_Pair, 0)
+
 
 # Step 3 :  Run classifier to get a function from DR'd training_data.csv and training_labels.csv
 # Step 3.1 : Run the classifier on DR'd test_data.csv to get
